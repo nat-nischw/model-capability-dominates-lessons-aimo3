@@ -1,0 +1,15 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
