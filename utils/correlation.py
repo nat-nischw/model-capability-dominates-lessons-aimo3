@@ -115,25 +115,42 @@ def compute_rho_table(data: list[tuple[str, int, int, bool]]) -> list[dict]:
     return results
 
 
-# ── Paper data: all 16 computable points across 4 models ─────────────────────
+# ── Paper data: all 19 computable points across 4 models (Section 4) ─────────
+#
+# 7 large-N points (N≥7), mean ρ̂ = -0.122:
+#   {-0.167, -0.167, -0.143, -0.143, -0.100, -0.067, -0.067}
+#   - Two -0.143 values come from gpt-oss-20b at N=8
+# 1 medium-N point (N=5): gpt-oss-20b ρ̂ = -0.250 (excluded from N≥7 mean)
+# 11 forced N=3 points (3 Nemotron + 8 gpt-oss-20b): all ρ̂ = -0.500 (minimum)
+# All 19 mean: ρ̂ = -0.348
 
 PAPER_DATA = {
     'Qwen3.5-35B-A3B': [
-        ('42d360',  7,  6, True),
-        ('a295e9', 11,  6, True),
-        ('424e18', 16,  3, False),
-        ('dd7f5e', 16,  1, False),
+        ('42d360',  7,  6, True),    # ρ = -0.167
+        ('a295e9', 11,  6, True),    # ρ = -0.099 (≈ -0.100)
+        ('424e18', 16,  3, False),   # ρ = -0.067
+        ('dd7f5e', 16,  1, False),   # ρ = -0.067
     ],
     'gpt-oss-120b': [
-        ('dd7f5e',  7,  4, True),
+        ('dd7f5e',  7,  4, True),    # ρ = -0.167
+    ],
+    'gpt-oss-20b (N=8)': [
+        # Two large-N points contributing to the seven N≥7 estimates.
+        # Both yield ρ = -0.143 (v_c=4 or 5 at N=8 are symmetric).
+        ('large_n_p1', 8, 4, True),  # ρ = -0.143
+        ('large_n_p2', 8, 5, True),  # ρ = -0.143
+    ],
+    'gpt-oss-20b (N=5)': [
+        # Single N=5 point excluded from N≥7 mean but confirms sign
+        ('medium_n_p1', 5, 2, True), # ρ = -0.250
     ],
     'Nemotron-Super-120B': [
-        ('641659', 3, 1, True),
+        ('641659', 3, 1, True),      # ρ = -0.500 (forced minimum)
         ('dd7f5e', 3, 1, True),
         ('a295e9', 3, 1, True),
     ],
-    'gpt-oss-20b': [
-        ('641659', 3, 1, True),
+    'gpt-oss-20b (N=3)': [
+        ('641659', 3, 1, True),      # ρ = -0.500 (forced)
         ('42d360', 3, 2, True),
         ('9c1c5f', 3, 2, True),
         ('dd7f5e', 3, 2, True),
@@ -153,7 +170,7 @@ if __name__ == '__main__':
     print("=" * 70)
 
     all_rhos = []
-    large_n_rhos = []
+    large_n_rhos = []  # N >= 7
 
     for model, data in PAPER_DATA.items():
         table = compute_rho_table(data)
@@ -161,17 +178,18 @@ if __name__ == '__main__':
         for row in table:
             tag = " (N=3 forced)" if row['N'] == 3 else ""
             print(f"  {row['pid']}: N={row['N']:2d}, v_c={row['v_c']:2d}, "
-                  f"p̂={row['p_hat']:.3f}, ρ̂={row['rho_hat']:+.3f}{tag}")
+                  f"p_hat={row['p_hat']:.3f}, rho_hat={row['rho_hat']:+.3f}{tag}")
             all_rhos.append(row['rho_hat'])
             if row['N'] >= 7:
                 large_n_rhos.append(row['rho_hat'])
 
-    print(f"\n{'─' * 70}")
-    print(f"All {len(all_rhos)} points:  mean ρ̂ = {np.mean(all_rhos):.4f}")
-    print(f"N≥7 ({len(large_n_rhos)} points): mean ρ̂ = {np.mean(large_n_rhos):.4f}")
+    print(f"\n{'-' * 70}")
+    print(f"All {len(all_rhos)} points:  mean rho_hat = {np.mean(all_rhos):.4f}")
+    print(f"N>=7 ({len(large_n_rhos)} points): mean rho_hat = {np.mean(large_n_rhos):.4f}")
+    print(f"Paper reports: 19 points, mean -0.348; 7 N>=7 points, mean -0.122")
 
-    print(f"\nNeff at mean ρ̂ (N≥7):")
+    print(f"\nNeff at N>=7 mean rho_hat:")
     rho_mean = np.mean(large_n_rhos)
     for N in [8, 16, 32]:
         neff = compute_neff(N, rho_mean)
-        print(f"  N={N:2d} → Neff = {neff:.1f}")
+        print(f"  N={N:2d} -> Neff = {neff:.1f}")

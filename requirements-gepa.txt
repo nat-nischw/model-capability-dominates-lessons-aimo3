@@ -1,0 +1,4 @@
+gepa>=0.0.17
+litellm>=1.52.0
+anthropic>=0.40.0
+python-dotenv>=1.0.0
