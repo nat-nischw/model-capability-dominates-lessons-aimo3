@@ -1,7 +1,7 @@
 """
 Verification-enhanced voting for majority-vote selection loss.
 
-Paper context (Section "Beyond Majority Voting"): gpt-oss-120b at pass@20 scores
+Paper context (Section "Selection Loss"): gpt-oss-120b at pass@20 scores
 ~45.5 on the private AIMO-3 set; our best majority-vote run scores 42/50. The
 six-point gap is selection loss — the correct answer is present in the N=8 pool
 but outvoted by a confidently-wrong alternative.

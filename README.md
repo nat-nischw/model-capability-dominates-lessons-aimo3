@@ -81,7 +81,7 @@ Selection-level optimization is **not** tested in the paper. It remains open; th
 
 ---
 
-Fork [the notebook on Kaggle](https://www.kaggle.com/code/natnitarach/aimo-3-model-capability-dominates-inference-time), set `EXPERIMENT` to any configuration from the ablation table, and run on a single H100.
+Fork [the notebook on Kaggle](https://www.kaggle.com/code/natnitarach/aimo-3-model-capability-dominate), set `EXPERIMENT` to any configuration from the ablation table, and run on a single H100.
 
 **Citation**:
 ```bibtex
