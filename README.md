@@ -10,7 +10,7 @@ gpt-oss-120b (5.1B active parameters, MoE) with N=8 attempts at T=1.0 and entrop
 
 ## Implementation
 
-The `utils/` package provides method-of-moments estimators, voting analysis, and prompt-optimization tooling used in the paper. Each module is self-contained. Run every command from the repo root.
+The `utils/` package provides method-of-moments estimators, voting analysis, and prompt-optimization tooling used in the paper. Each module is self-contained. 
 
 ```bash
 # Pairwise error correlation across 19 points / 4 models
@@ -82,6 +82,10 @@ Selection-level optimization is **not** tested in the paper. It remains open; th
 ---
 
 Fork [the notebook on Kaggle](https://www.kaggle.com/code/natnitarach/aimo-3-model-capability-dominate), set `EXPERIMENT` to any configuration from the ablation table, and run on a single H100.
+
+---
+
+**Paper**: [arXiv:2603.27844](https://arxiv.org/abs/2603.27844)
 
 **Citation**:
 ```bibtex
