@@ -89,20 +89,21 @@ def p_hat_from_score(score: float, N: int, n_problems: int = 50,
 
 
 def entropy_weighted_vote(answers: list[str], entropies: list[float],
-                          alpha: float = 0.1) -> str:
+                          eps: float = 1e-9) -> str:
     """
-    Entropy-weighted majority vote.
+    Entropy-weighted majority vote (paper Section 2).
 
-    weight = 1 + 1 / (entropy + alpha)
-    Low-entropy (confident) attempts get higher weight.
+    weight w_i = 1 / max(entropy_i, eps)
+    Low-entropy (confident) attempts get higher weight. The final answer
+    maximizes S(a) = sum_{i: a_i = a} w_i.
 
     Args:
         answers:   List of answer strings from each attempt
-        entropies: Corresponding generation entropy for each attempt
-        alpha:     Smoothing constant (default 0.1)
+        entropies: Corresponding mean reasoning entropy for each attempt
+        eps:       Numerical floor on entropy (default 1e-9)
 
     Returns:
-        Winning answer string.
+        Winning answer string (argmax_a S(a)).
 
     Example:
         >>> answers   = ['42', '42', '37', '42', '37']
@@ -113,7 +114,7 @@ def entropy_weighted_vote(answers: list[str], entropies: list[float],
     from collections import defaultdict
     scores = defaultdict(float)
     for ans, ent in zip(answers, entropies):
-        w = 1.0 + 1.0 / (ent + alpha)
+        w = 1.0 / max(ent, eps)
         scores[ans] += w
     return max(scores, key=scores.get)
 

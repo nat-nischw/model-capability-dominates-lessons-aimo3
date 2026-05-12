@@ -6,9 +6,14 @@ Paper context (Section "Selection Loss"): gpt-oss-120b at pass@20 scores
 six-point gap is selection loss — the correct answer is present in the N=8 pool
 but outvoted by a confidently-wrong alternative.
 
-This module replaces plain majority vote with a verifier-aware selector:
+This module replaces plain majority vote with a verifier-aware selector
+(paper Section 9, λ=2.0):
 
-    final = argmax_a [vote_count(a) * verifier_score(problem, a)]
+    final = argmax_a S(a) * (1 + λ * verify(problem, a))
+
+where S(a) = sum_{i: a_i = a} w_i is the entropy-weighted vote score from
+Section 2, with w_i = 1 / max(ε_i, 1e-9). Setting λ=0 recovers plain
+entropy-weighted voting.
 
 Three verification strategies are supported, ordered by cost:
 
@@ -261,8 +266,9 @@ def lm_reverify(
 # Main selector
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _entropy_weight(entropy: float, alpha: float = 0.1) -> float:
-    return 1.0 + 1.0 / (entropy + alpha)
+def _entropy_weight(entropy: float, eps: float = 1e-9) -> float:
+    """Paper Section 2: w_i = 1 / max(entropy_i, 1e-9)."""
+    return 1.0 / max(entropy, eps)
 
 
 def verified_vote(
@@ -273,32 +279,33 @@ def verified_vote(
     sandbox: Optional[SandboxProtocol] = None,
     lm_client: Optional[LMClientProtocol] = None,
     lm_model: str = 'gpt-oss',
-    entropy_alpha: float = 0.1,
+    entropy_eps: float = 1e-9,
     verifier_weight: float = 2.0,
 ) -> tuple[str, dict]:
     """
-    Verifier-aware majority vote.
+    Verifier-aware majority vote (paper Section 9, Equation 3).
 
     Algorithm:
-        1. Group attempts by answer; compute entropy-weighted vote count.
+        1. Group attempts by answer; compute entropy-weighted score
+           S(a) = sum_{i: a_i = a} w_i with w_i = 1 / max(entropy_i, eps).
         2. If only one unique answer, return it (no verification needed).
-        3. Take top-K candidates by vote count.
-        4. Score each with the chosen verifier.
-        5. Final score = vote_count * (1 + verifier_weight * verifier_score).
-        6. Return argmax.
+        3. Take top-K candidates by S(a).
+        4. Score each with the chosen verifier v(a) in [0, 1].
+        5. Final score = S(a) * (1 + verifier_weight * v(a)).
+        6. Return argmax_a.
 
     Args:
         attempts:           List of Attempt objects.
         problem:            Original problem text.
         strategy:           'constraint_check' | 'code_execute' | 'lm_reverify'.
-        top_k:              Max candidates to verify (others get verifier=0.5).
+        top_k:              Max candidates to verify (others get v(a)=0.5).
         sandbox:            Required for code_execute.
         lm_client:          Required for lm_reverify.
         lm_model:           Model name for lm_reverify.
-        entropy_alpha:      Smoothing for entropy weighting.
-        verifier_weight:    How much to trust the verifier vs. vote count.
+        entropy_eps:        Numerical floor on entropy (paper: 1e-9).
+        verifier_weight:    λ in the paper. Default 2.0.
                             verifier_weight=0 recovers plain entropy-weighted vote.
-                            verifier_weight=inf ignores vote count entirely.
+                            verifier_weight=inf ignores S(a) entirely.
 
     Returns:
         (final_answer, debug_info) where debug_info contains per-candidate scores.
@@ -316,7 +323,7 @@ def verified_vote(
         return "", {}
 
     vote_counts = {
-        ans: sum(_entropy_weight(a.entropy, entropy_alpha) for a in group)
+        ans: sum(_entropy_weight(a.entropy, entropy_eps) for a in group)
         for ans, group in groups.items()
     }
 
