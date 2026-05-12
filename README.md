@@ -39,7 +39,7 @@ python -m utils.optimize_prompt -e BF1 --run-dir ./gepa_out  # custom output dir
 | Pairwise correlation $\hat{\rho}$ | $\hat{\rho} = \dfrac{v_c(v_c-1)\,/\,[N(N-1)] - \hat{p}^{2}}{\hat{p}(1-\hat{p})}$ | `correlation.py` |
 | Effective sample size $N_{\text{eff}}$ | $N_{\text{eff}} = \dfrac{N}{1 + (N-1)\,\rho}$ | `correlation.py` |
 | Expected score | $50 \cdot \Pr\!\left(X \geq \lceil N/2 \rceil\right),\ X \sim \mathrm{Bin}(N, \hat{p})$ | `voting.py` |
-| Entropy-weighted score | $w_i = \dfrac{1}{\max(\epsilon_i,\, 10^{-9})},\quad S(a) = \!\!\!\sum_{i:\,a_i = a}\!\!\! w_i$ | `voting.py` |
+| Entropy-weighted score | $w_i = \dfrac{1}{\max(\epsilon_i,\, 10^{-9})},\quad S(a) = \sum_{i:\, a_i = a} w_i$ | `voting.py` |
 | Cumulative hit rate | $1 - (1-p)^{K}$ over $K$ submissions | `lottery.py` |
 | Verifier-aware vote | $\text{final} = \arg\max_{a}\, S(a) \cdot \bigl(1 + \lambda \cdot \text{verify}(p, a)\bigr)$ | `verified_voting.py` |
 | Prompt optimization | GEPA reflective evolutionary search | `optimize_prompt.py` |
